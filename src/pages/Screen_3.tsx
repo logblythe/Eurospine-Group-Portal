@@ -2,8 +2,18 @@ import { Container, Stack, Tabs } from "@mantine/core";
 import { NoContact_NoParticipation } from "./Tabs/NoContact_NoParticipation";
 
 import Header from "../component/Header";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 export function Screen_3() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    const userName = localStorage.getItem("uName");
+    const password = localStorage.getItem("password");
+    if (!userName || !password) {
+      navigate("/login");
+    }
+  });
   return (
     <>
       <Header showSelectBox={false} />

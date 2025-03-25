@@ -12,8 +12,17 @@ import {
 import { useListState } from "@mantine/hooks";
 import Header from "../component/Header";
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 export function Screen_1() {
+  useEffect(() => {
+    const userName = localStorage.getItem("uName");
+    const password = localStorage.getItem("password");
+    if (!userName || !password) {
+      navigate("/login");
+    }
+  });
+
   const rows = [
     {
       id: "1",
