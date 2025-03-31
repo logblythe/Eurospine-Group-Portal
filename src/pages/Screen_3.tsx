@@ -18,7 +18,14 @@ export function Screen_3() {
   });
   return (
     <>
-      {/* <Header showSelectBox={false} /> */}
+      <Header
+        showSelectBox={false}
+        onGroupSelect={function (id: string, name: string): void {
+          throw new Error("Function not implemented.");
+        }}
+        dropdownOpened={false}
+        loadingGroups={{}}
+      />
       <Container mt={"10%"}>
         <Stack gap={"xl"}>
           <Tabs

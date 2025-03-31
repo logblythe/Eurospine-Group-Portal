@@ -24,7 +24,7 @@ export function Screen_1() {
   const [groupMembers, setGroupMembers] = useState<IndividualMember[]>([]);
   const [selectedRowIds, setSelectedRowIds] = useState<string[]>([]);
   const [groupId, setGroupId] = useState("");
-  const [loading, setIsLoading] = useState("false");
+
   useEffect(() => {
     const userName = localStorage.getItem("username");
     const password = localStorage.getItem("password");
