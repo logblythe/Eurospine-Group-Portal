@@ -1,5 +1,6 @@
 import {
   Button,
+  Center,
   Checkbox,
   Container,
   Flex,
@@ -85,7 +86,7 @@ export function Screen_1() {
     if (allSelected) {
       setSelectedRowIds([]);
     } else {
-      setSelectedRowIds(groupMembers.map((member) => member.id));
+      setSelectedRowIds(fetchedGroupMembers.map((member) => member.id));
     }
   };
 
@@ -100,7 +101,7 @@ export function Screen_1() {
   };
 
   return (
-    <Stack h="100vh" w="100vw" bg="aliceblue">
+    <Stack>
       <Header
         showSelectBox
         onGroupSelect={(id: string, name: string) => {
@@ -110,23 +111,29 @@ export function Screen_1() {
         dropdownOpened={false}
         loadingGroups={{}}
       />
-      <Container w="90vw" mt="90px">
-        <Stack gap="xl">
-          <ScrollArea
-            style={{
-              height: "calc(90vh - 200px)",
-              position: "relative",
-              overflow: "auto",
-            }}
-          >
+      {/* <Container mt="90px"> */}
+      <Stack gap="xl" m={"150px"} w={"70%"}>
+        <Center>
+          <ScrollArea h={360}>
             <Table
-              style={{ borderRadius: "16px", overflow: "auto" }}
-              bg="white"
-              h="calc(100vh - 220px)"
+              style={{
+                fontFamily: "Arial",
+              }}
+              horizontalSpacing="xl"
+              verticalSpacing="md"
+              mah={"80vh"}
+              mih={"20vh"}
+              stickyHeader
               striped
-              highlightOnHover
+              captionSide="bottom"
             >
-              <Table.Thead style={{ background: "lightgrey" }}>
+              <Table.Thead
+                bg="rgba(243, 243, 243, 1)"
+                style={{
+                  fontWeight: "normal",
+                  fontSize: "14px",
+                }}
+              >
                 <Table.Tr>
                   <Table.Th>
                     <Checkbox
@@ -165,20 +172,21 @@ export function Screen_1() {
                         ))}
                       </List> */}
                       </Table.Td>
+                      <Table.Td></Table.Td>
                     </Table.Tr>
                   ))}
                 </Table.Tbody>
               )}
             </Table>
           </ScrollArea>
-
-          <Flex justify="flex-end" align="flex-end" gap="lg" px="xl">
-            <Button bg="red" onClick={handlePageNavigation}>
-              Match Against Eurospine
-            </Button>
-          </Flex>
-        </Stack>
-      </Container>
+        </Center>
+        <Flex justify="flex-end" align="flex-end" gap="lg" px="xl">
+          <Button bg="red" onClick={handlePageNavigation}>
+            Match Against Eurospine
+          </Button>
+        </Flex>
+      </Stack>
+      {/* </Container> */}
     </Stack>
   );
 }
