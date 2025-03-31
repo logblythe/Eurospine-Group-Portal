@@ -121,7 +121,7 @@ export function Screen_1() {
               }}
               horizontalSpacing="xl"
               verticalSpacing="md"
-              mah={"80vh"}
+              mah={"200vh"}
               mih={"20vh"}
               stickyHeader
               striped
@@ -149,11 +149,20 @@ export function Screen_1() {
                   <Table.Th>Remarks</Table.Th>
                 </Table.Tr>
               </Table.Thead>
-              {isLoading ? (
-                <Loader></Loader>
-              ) : (
-                <Table.Tbody>
-                  {fetchedGroupMembers.map((row: IndividualMember) => (
+
+              <Table.Tbody>
+                {isLoading ? (
+                  <Table.Tr>
+                    <Table.Td
+                      colSpan={6}
+                      style={{ textAlign: "center" }}
+                      bg={"white"}
+                    >
+                      <Loader />
+                    </Table.Td>
+                  </Table.Tr>
+                ) : (
+                  fetchedGroupMembers.map((row: IndividualMember) => (
                     <Table.Tr key={row.id}>
                       <Table.Td>
                         <Checkbox
@@ -174,9 +183,9 @@ export function Screen_1() {
                       </Table.Td>
                       <Table.Td></Table.Td>
                     </Table.Tr>
-                  ))}
-                </Table.Tbody>
-              )}
+                  ))
+                )}
+              </Table.Tbody>
             </Table>
           </ScrollArea>
         </Center>
