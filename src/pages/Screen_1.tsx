@@ -1,189 +1,184 @@
 import {
   Button,
   Checkbox,
+  Container,
   Flex,
   List,
   ListItem,
+  Loader,
   ScrollArea,
-  Select,
   Stack,
   Table,
 } from "@mantine/core";
-import { useListState } from "@mantine/hooks";
-import Header from "../component/Header";
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { fetchData } from "../api/api-client";
+import { groupMembersById } from "../api/api-url";
+import Header from "../component/Header";
+import { IndividualMember } from "../../types/IndividualMember";
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
 
 export function Screen_1() {
+  const navigate = useNavigate();
+  const [groupMembers, setGroupMembers] = useState<IndividualMember[]>([]);
+  const [selectedRowIds, setSelectedRowIds] = useState<string[]>([]);
+  const [groupId, setGroupId] = useState("");
+  const [loading, setIsLoading] = useState("false");
   useEffect(() => {
-    const userName = localStorage.getItem("uName");
+    const userName = localStorage.getItem("username");
     const password = localStorage.getItem("password");
+
     if (!userName || !password) {
       navigate("/login");
     }
+  }, [navigate]);
+
+  // const fetchGroupMemberById = useCallback(
+  //   async (contactId: string): Promise<void> => {
+  //     if (!contactId) return;
+  //     try {
+  //       const result = await fetchData<IndividualMember[]>(
+  //         groupMembersById(contactId)
+  //       );
+  //       setGroupMembers(result);
+  //     } catch (error) {
+  //       console.error("Error fetching group members:", error);
+  //     }
+  //   },
+  //   []
+  // );
+
+  // useEffect(() => {
+  //   fetchGroupMemberById(groupId);
+  // }, [fetchGroupMemberById]);
+  const fetchGroupMembers = async (
+    groupId: string
+  ): Promise<IndividualMember[]> => {
+    if (!groupId) return [];
+    try {
+      return await fetchData<IndividualMember[]>(groupMembersById(groupId));
+    } catch (error) {
+      console.error("Error fetching group members:", error);
+      return [];
+    }
+  };
+
+  const {
+    isLoading,
+
+    data: fetchedGroupMembers = [],
+  } = useQuery({
+    queryKey: ["groupMembers", groupId],
+    queryFn: () => fetchGroupMembers(groupId),
+    enabled: !!groupId,
   });
 
-  const rows = [
-    {
-      id: "1",
-      firstName: "Amrita",
-      lastName: "Maharjan",
-      email: "a@gmail.com",
-      remark: [],
-      checked: false,
-    },
-    {
-      id: "2",
-      firstName: "John",
-      lastName: "Doe",
-      email: "john.doe@example.com",
-      remark: ["pending", "failed"],
-      checked: false,
-    },
-    {
-      id: "3",
-      firstName: "Jane",
-      lastName: "Smith",
-      email: "jane.smith@example.com",
-      remark: ["completed", "in progress"],
-      checked: false,
-    },
-    {
-      id: "4",
-      firstName: "Michael",
-      lastName: "Brown",
-      email: "michael.brown@example.com",
-      remark: [],
-      checked: false,
-    },
-    {
-      id: "5",
-      firstName: "Emily",
-      lastName: "Davis",
-      email: "emily.davis@example.com",
-      remark: ["pending"],
-      checked: false,
-    },
-    {
-      id: "6",
-      firstName: "David",
-      lastName: "Wilson",
-      email: "david.wilson@example.com",
-      remark: ["started", "in progress", "completed"],
-      checked: false,
-    },
-  ];
-  const [values, handlers] = useListState(rows);
+  const allSelected =
+    selectedRowIds.length === fetchedGroupMembers.length &&
+    fetchedGroupMembers.length > 0;
+  const someSelected =
+    selectedRowIds.length > 0 &&
+    selectedRowIds.length < fetchedGroupMembers.length;
 
-  const allChecked = values.every((value) => value.checked);
-  const indeterminate = values.some((value) => value.checked) && !allChecked;
-  const handleRowAddition = () => {
-    handlers.setState([...values, ...rows]);
+  const toggleSelectAll = () => {
+    if (allSelected) {
+      setSelectedRowIds([]);
+    } else {
+      setSelectedRowIds(groupMembers.map((member) => member.id));
+    }
   };
-  const navigate = useNavigate();
+
+  const toggleRowSelection = (id: string) => {
+    setSelectedRowIds((prev) =>
+      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
+    );
+  };
+
   const handlePageNavigation = () => {
     navigate("/Screen3");
   };
+
   return (
-    <>
-      <Stack h={"100vh"} gap={"xl"} bg={"aliceblue"}>
-        <Header showSelectBox={true} />
-        <Stack gap={"sm"} p={"xl"} pb={"md"}>
+    <Stack h="100vh" w="100vw" bg="aliceblue">
+      <Header
+        showSelectBox
+        onGroupSelect={(id: string, name: string) => {
+          setGroupId(id);
+          // fetchGroupMemberById(id);
+        }}
+        dropdownOpened={false}
+        loadingGroups={{}}
+      />
+      <Container w="90vw" mt="90px">
+        <Stack gap="xl">
           <ScrollArea
             style={{
-              height: "calc(100vh - 200px)",
+              height: "calc(90vh - 200px)",
               position: "relative",
+              overflow: "auto",
             }}
           >
             <Table
-              style={{
-                borderRadius: "16px",
-                overflow: "auto",
-              }}
-              bg={"white"}
-              h={"calc(100vh - 220px"}
-              w={"90%"}
-              m={"60px"}
-              mah={"50px"}
-              mih={"20%"}
-              stickyHeader
-              stickyHeaderOffset={50}
-              captionSide="bottom"
-              highlightOnHover
+              style={{ borderRadius: "16px", overflow: "auto" }}
+              bg="white"
+              h="calc(100vh - 220px)"
               striped
-              verticalSpacing={"lg"}
+              highlightOnHover
             >
-              <Table.Thead
-                style={{
-                  background: "lightgrey",
-                }}
-              >
+              <Table.Thead style={{ background: "lightgrey" }}>
                 <Table.Tr>
                   <Table.Th>
                     <Checkbox
-                      checked={allChecked}
-                      indeterminate={indeterminate}
-                      onChange={() =>
-                        handlers.setState((current) =>
-                          current.map((value) => ({
-                            ...value,
-                            checked: !allChecked,
-                          }))
-                        )
-                      }
-                    ></Checkbox>
+                      checked={allSelected}
+                      indeterminate={someSelected}
+                      onChange={toggleSelectAll}
+                    />
                   </Table.Th>
                   <Table.Th>Internal Id</Table.Th>
-                  <Table.Td>First Name</Table.Td>
-                  <Table.Td> Last Name</Table.Td>
-                  <Table.Td>Email Address</Table.Td>
-                  <Table.Td>Remarks</Table.Td>
+                  <Table.Th>First Name</Table.Th>
+                  <Table.Th>Last Name</Table.Th>
+                  <Table.Th>Email Address</Table.Th>
+                  <Table.Th>Remarks</Table.Th>
                 </Table.Tr>
               </Table.Thead>
-              <Table.Tbody>
-                {values.map((row, index) => (
-                  <Table.Tr key={row.id}>
-                    <Table.Td style={{ borderRight: "0.5px solid black" }}>
-                      {row.remark && row.remark.length > 0 ? (
-                        <Checkbox disabled checked onChange={() => {}} />
-                      ) : (
+              {isLoading ? (
+                <Loader></Loader>
+              ) : (
+                <Table.Tbody>
+                  {fetchedGroupMembers.map((row: IndividualMember) => (
+                    <Table.Tr key={row.id}>
+                      <Table.Td>
                         <Checkbox
-                          disabled
-                          checked={row.checked}
-                          onChange={(event) =>
-                            handlers.setItemProp(
-                              index,
-                              "checked",
-                              event.currentTarget.checked
-                            )
-                          }
-                        ></Checkbox>
-                      )}
-                    </Table.Td>
-                    <Table.Td>{row.id}</Table.Td>
-                    <Table.Td>{row.firstName}</Table.Td>
-                    <Table.Td>{row.lastName}</Table.Td>
-                    <Table.Td>{row.email}</Table.Td>
-                    <List>
-                      {row.remark.map((tag) => (
-                        <ListItem>{tag}</ListItem>
-                      ))}
-                    </List>
-                  </Table.Tr>
-                ))}
-              </Table.Tbody>
+                          checked={selectedRowIds.includes(row.id)}
+                          onChange={() => toggleRowSelection(row.id)}
+                        />
+                      </Table.Td>
+                      <Table.Td>{row.id}</Table.Td>
+                      <Table.Td>{row.firstName}</Table.Td>
+                      <Table.Td>{row.lastName}</Table.Td>
+                      {/* <Table.Td>{row.email}</Table.Td> */}
+                      <Table.Td>
+                        {/* <List>
+                        {row.remark.map((tag, i) => (
+                          <ListItem key={i}>{tag}</ListItem>
+                        ))}
+                      </List> */}
+                      </Table.Td>
+                    </Table.Tr>
+                  ))}
+                </Table.Tbody>
+              )}
             </Table>
           </ScrollArea>
+
+          <Flex justify="flex-end" align="flex-end" gap="lg" px="xl">
+            <Button bg="red" onClick={handlePageNavigation}>
+              Match Against Eurospine
+            </Button>
+          </Flex>
         </Stack>
-        <Flex align="flex-end" justify={"flex-end"} gap={"lg"} px={"xl"}>
-          <Button bg={"red"} onClick={handleRowAddition}>
-            Add table data
-          </Button>
-          <Button bg={"red"} onClick={handlePageNavigation}>
-            Match Against Eurospine
-          </Button>
-        </Flex>
-      </Stack>
-    </>
+      </Container>
+    </Stack>
   );
 }

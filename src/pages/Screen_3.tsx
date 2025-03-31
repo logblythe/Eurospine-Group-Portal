@@ -4,11 +4,13 @@ import { NoContact_NoParticipation } from "./Tabs/NoContact_NoParticipation";
 import Header from "../component/Header";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { Contact_NoParticipation } from "./Tabs/Contact_NoParticipation";
+import { Contact_participation } from "./Tabs/Contact_participation";
 
 export function Screen_3() {
   const navigate = useNavigate();
   useEffect(() => {
-    const userName = localStorage.getItem("uName");
+    const userName = localStorage.getItem("username");
     const password = localStorage.getItem("password");
     if (!userName || !password) {
       navigate("/login");
@@ -16,7 +18,7 @@ export function Screen_3() {
   });
   return (
     <>
-      <Header showSelectBox={false} />
+      {/* <Header showSelectBox={false} /> */}
       <Container mt={"10%"}>
         <Stack gap={"xl"}>
           <Tabs
@@ -46,9 +48,13 @@ export function Screen_3() {
               <NoContact_NoParticipation />
             </Tabs.Panel>
 
-            <Tabs.Panel value="messages">Messages tab content</Tabs.Panel>
+            <Tabs.Panel value="Eurospine Account Without PArticipation">
+              <Contact_NoParticipation />
+            </Tabs.Panel>
 
-            <Tabs.Panel value="settings">Settings tab content</Tabs.Panel>
+            <Tabs.Panel value="Eurospine Account With PArticipation">
+              <Contact_participation />
+            </Tabs.Panel>
           </Tabs>
         </Stack>
       </Container>

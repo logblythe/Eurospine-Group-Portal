@@ -5,7 +5,6 @@ import {
   Divider,
   Flex,
   HoverCard,
-  Select,
   Stack,
   Switch,
   Text,
@@ -16,12 +15,25 @@ import { IconMoonStars, IconSun } from "@tabler/icons-react";
 import { useComputedColorScheme, useMantineColorScheme } from "@mantine/core";
 import { useNavigate } from "react-router-dom";
 import { Logo } from "./Logo";
+import { SelectBox } from "./SelectBox";
 
 interface HeaderProps {
   showSelectBox?: boolean;
 }
+type Props = {
+  onGroupSelect: (id: string, name: string) => void;
+  dropdownOpened: boolean;
+  loadingGroups: {
+    [key: string]: boolean;
+  };
+};
 
-const Header = ({ showSelectBox = false }: HeaderProps) => {
+const Header = ({
+  showSelectBox = false,
+  onGroupSelect,
+  dropdownOpened,
+  loadingGroups,
+}: HeaderProps & Props) => {
   const [desktopOpened] = useDisclosure(true);
 
   const { setColorScheme } = useMantineColorScheme();
@@ -30,7 +42,7 @@ const Header = ({ showSelectBox = false }: HeaderProps) => {
     setColorScheme(computedColorScheme === "dark" ? "light" : "dark");
   };
   const navigate = useNavigate();
-  let userInfo = localStorage.getItem("uName") ?? "null";
+  let userInfo = localStorage.getItem("username") ?? "null";
   const handleLogOut = () => {
     localStorage.clear();
     navigate("/login");
@@ -51,11 +63,10 @@ const Header = ({ showSelectBox = false }: HeaderProps) => {
 
           <Flex gap={"md"}>
             {showSelectBox && (
-              <Select
-                w={"30vw"}
-                bg={"white"}
-                placeholder="SelectGroup"
-                data={["React", "Angular", "Vue", "Svelte"]}
+              <SelectBox
+                onGroupSelect={onGroupSelect}
+                dropdownOpened={dropdownOpened}
+                loadingGroups={loadingGroups}
               />
             )}
             <HoverCard width={280} shadow="md">

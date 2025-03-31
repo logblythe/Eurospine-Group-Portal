@@ -10,6 +10,7 @@ import {
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { notifications } from "@mantine/notifications";
+import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -18,72 +19,66 @@ export function Login() {
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm({
-    mode: "uncontrolled",
     initialValues: {
       uName: "",
       password: "",
     },
     validate: {
-      uName: (value: any) => {
-        if (!value) {
-          return "Invalid username";
-        }
-        return;
-      },
-      password: (value: any) => {
-        if (!value) {
-          return "Invalid password";
-        }
-        return;
-      },
+      uName: (value: string) => (!value ? "Invalid username" : null),
+      password: (value: string) => (!value ? "Invalid password" : null),
     },
   });
-  // const baseUrl = import.meta.env.VITE_BASE_URL;
+
+  const baseUrl = import.meta.env.VITE_BASE_URL;
+
+  const mutation = useMutation({
+    mutationFn: async (values: { uName: string; password: string }) => {
+      const response = await fetch(`${baseUrl}/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: values.uName,
+          password: values.password,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Invalid credentials!");
+      }
+
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        return response.json();
+      } else {
+        return response.text();
+      }
+    },
+    onSuccess: (data, variables) => {
+      localStorage.setItem("username", variables.uName);
+      localStorage.setItem("password", variables.password);
+      navigate("/Screen1");
+      notifications.show({
+        color: "green",
+        title: "Success",
+        message: "Logged in successfully!",
+      });
+    },
+    onError: (error) => {
+      notifications.show({
+        color: "red",
+        title: "Error",
+        message: error.message || "Login failed!",
+      });
+    },
+    onSettled: () => {
+      setIsLoading(false);
+    },
+  });
 
   const handleSubmit = (values: { uName: string; password: string }) => {
-    setIsLoading(true);
-
-    // fetch(`${baseUrl}/auth/login`, {
-    //   method: "POST",
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //   },
-    //   body: JSON.stringify({
-    //     username: values.uName,
-    //     password: values.password,
-    //   }),
-    // })
-    //   .then((response) => {
-    //     setIsLoading(false);
-    //     if (!response.ok) {
-    //       notifications.show({
-    //         color: "red",
-    //         title: "Error",
-    //         message: "Incorrect credentials!",
-    //       });
-    //     } else {
-    localStorage.setItem("uName", values.uName);
-    localStorage.setItem("password", values.password);
-    navigate("/Screen1");
-    //   notifications.show({
-    //     color: "green",
-    //     title: "Success",
-    //     message: "Logged in successfully!",
-    //   });
-    // }
-    // })
-    // .then(() => {
-    //   setIsLoading(false);
-    // })
-    // .catch((err) => {
-    // console.log(err.message);
-    //   setIsLoading(false);
-    //   notifications.show({
-    //     color: "red",
-    //     title: "Error",
-    //     message: "Error occurred!",
-    //   });
-    // });
+    mutation.mutate(values);
   };
 
   return (
@@ -104,11 +99,7 @@ export function Login() {
       >
         <Stack>
           <Title order={1}>Sign in to your account</Title>
-          <form
-            onSubmit={form.onSubmit((values) => {
-              handleSubmit(values);
-            })}
-          >
+          <form onSubmit={form.onSubmit(handleSubmit)}>
             <Stack gap={"lg"}>
               <TextInput
                 label="Enter your username"
